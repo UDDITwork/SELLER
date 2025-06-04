@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import axios from "axios";
 import { resetPassword, verifyResetToken } from '../../services/sellerService';
 
 const ResetPasswordSchema = Yup.object().shape({

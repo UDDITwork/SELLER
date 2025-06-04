@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
+import axios from "axios";
 
 const SellerForgotPassword = () => {
   const [email, setEmail] = useState('');

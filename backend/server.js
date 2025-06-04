@@ -5,7 +5,7 @@ const http    = require('http');
 const socket  = require('socket.io');
 const app     = require('./app');            // ← central Express app
 const path    = require('path');
-
+const express = require('express');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT     = process.env.PORT     || 5000;
 
