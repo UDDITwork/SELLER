@@ -1,0 +1,145 @@
+/* ===== Global wrapper ===== */
+.seller-register {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+/* ===== Logo ===== */
+.logo {
+  width: 160px;
+  margin-bottom: 12px;
+}
+
+/* ===== Stepper ===== */
+.stepper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #d1d5db;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.step-circle.active {
+  background: #f97316;
+  transform: scale(1.1);
+}
+
+.step-circle.completed {
+  background: #10b981;
+}
+
+/* ===== Card ===== */
+.form-card {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px 24px 32px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 480px) {
+  .form-card {
+    padding: 24px 16px 28px;
+    border-radius: 12px;
+  }
+}
+
+/* ===== Section title ===== */
+.section-title {
+  font-size: 18px;
+  margin-bottom: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+
+/* ===== Input fields ===== */
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-field,
+.google-places-autocomplete-container input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus,
+.google-places-autocomplete-container input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  border-radius: 8px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, #ff8a00 0%, #e52e71 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(229, 46, 113, 0.35);
+}
+
+.btn-secondary {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-size: 15px;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+/* ===== Link text ===== */
+.link-text {
+  font-size: 14px;
+  text-align: center;
+}
+
+.link-text a {
+  color: #e52e71;
+  text-decoration: none;
+}
+
+.link-text a:hover {
+  text-decoration: underline;
+}
