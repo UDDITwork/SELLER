@@ -1,40 +1,54 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const connectDB = require('./config/db'); // database connection
+/******************************************************************
+ * Central Express-app   (imported by server.js & unit-tests)      *
+ ******************************************************************/
+require('dotenv').config();                   // .env → process.env
+const express        = require('express');
+const path           = require('path');
+const cookieParser   = require('cookie-parser');
+const mongoSanitize  = require('express-mongo-sanitize');
+const helmet         = require('helmet');
+const xss            = require('xss-clean');
+const rateLimit      = require('express-rate-limit');
+const hpp            = require('hpp');
+const cors           = require('cors');
+const connectDB      = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
-// Import Seller Routes
-const sellerRoutes = require('./routes/sellerRoutes');
-
-const app = express();
-
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Public uploads folder
-const uploadsDir = path.join(__dirname, 'public/uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-app.use('/uploads', express.static(uploadsDir));
-
-// Connect to MongoDB
+/* ─────────────────────  connect MongoDB ───────────────────── */
 connectDB();
 
-// Routes
-app.use('/api/sellers', sellerRoutes);
+/* ────────────────────  build express app ──────────────────── */
+const app = express();
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server running!' });
-});
+/* --------- security / common middle-wares --------- */
+app.use(helmet());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true,
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(mongoSanitize());
+app.use(xss());
+app.use(hpp());
+app.use(rateLimit({ windowMs: 10 * 60 * 1000, max: 100 }));
 
-// Error Handler
+/* --------- static uploads folder --------- */
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+/* ─────────────────────  API ROUTES  ──────────────────────── */
+app.use('/api/sellers',  require('./routes/sellerRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/orders',   require('./routes/orderRoutes'));
+app.use('/api/users',    require('./routes/userRoutes'));
+
+/* health-check */
+app.get('/api/health', (_req, res) =>
+  res.status(200).json({ status: 'ok', message: 'Server running' })
+);
+
+/* error handler (keeps last) */
 app.use(errorHandler);
 
-module.exports = { app };
+module.exports = app;           // <-- exported for server.js & tests

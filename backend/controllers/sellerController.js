@@ -2,34 +2,9 @@ const Seller = require('../models/Seller');
 const { generateToken } = require('../utils/jwtToken');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
-
-// 🎯 NEW: Mock image upload function (same as used in AddProduct.js)
-const mockImageUpload = async (file) => {
-  try {
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Create base64 data URL for reliable image display
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        resolve(e.target.result); // Returns base64 data URL
-      };
-      reader.onerror = (error) => {
-        console.error('File reading error:', error);
-        // Fallback to a placeholder
-        resolve('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmMGYwZjAiLz4KPHRleHQgeD0iMTUwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+U2hvcCBJbWFnZTwvdGV4dD4KPC9zdmc+');
-      };
-      reader.readAsDataURL(file);
-    });
-  } catch (error) {
-    console.error('Image upload error:', error);
-    // Return placeholder SVG
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmMGYwZjAiLz4KPHRleHQgeD0iMTUwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+U2hvcCBJbWFnZTwvdGV4dD4KPC9zdmc+';
-  }
-};
 
 // @desc    Register a new seller
 // @route   POST /api/sellers/register
@@ -37,111 +12,52 @@ const mockImageUpload = async (file) => {
 exports.registerSeller = async (req, res) => {
   try {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        success: false, 
-        errors: errors.array() 
-      });
-    }
+    if (!errors.isEmpty())
+      return res.status(400).json({ success: false, errors: errors.array() });
 
     const {
-      firstName,
-      email,
-      password,
-      mobileNumber,
-      shop,
-      bankDetails
+      firstName, email, password, mobileNumber,
+      shop, bankDetails
     } = req.body;
 
-    // Check if seller already exists
-    const sellerExists = await Seller.findOne({ email });
-    if (sellerExists) {
+    const emailLC = email.toLowerCase();
+
+    // Check if seller exists with email or mobile number
+    const existingSeller = await Seller.findOne({
+      $or: [
+        { email: emailLC },
+        { mobileNumber }
+      ]
+    });
+
+    if (existingSeller) {
       return res.status(400).json({
         success: false,
-        message: 'Seller already exists'
+        message: existingSeller.email === emailLC ? 
+          'Email already registered' : 
+          'Mobile number already registered'
       });
     }
 
-    // Create new seller
+    // ✅ FIX: Don't hash password here - let the model's pre-save hook handle it
     const seller = await Seller.create({
       firstName,
-      email,
-      password,
+      email: emailLC,
+      password, // ← Raw password - will be hashed by pre-save hook
       mobileNumber,
       shop,
       bankDetails
     });
 
-    if (seller) {
-      // Generate JWT token
-      const token = generateToken(seller._id);
-
-      res.status(201).json({
-        success: true,
-        data: {
-          _id: seller._id,
-          firstName: seller.firstName,
-          email: seller.email,
-          mobileNumber: seller.mobileNumber,
-          shop: seller.shop,
-          token
-        }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Invalid seller data'
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Login seller
-// @route   POST /api/sellers/login
-// @access  Public
-exports.loginSeller = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        success: false, 
-        errors: errors.array() 
-      });
-    }
-
-    const { email, password } = req.body;
-
-    // Find seller
-    const seller = await Seller.findOne({ email });
-
-    if (!seller) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
-    // Match password
-    const isMatch = await seller.matchPassword(password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
-    // Generate JWT token
     const token = generateToken(seller._id);
 
-    res.status(200).json({
+    console.log('✅ Seller registered successfully:', {
+      id: seller._id,
+      email: seller.email,
+      firstName: seller.firstName
+    });
+
+    res.status(201).json({
       success: true,
       data: {
         _id: seller._id,
@@ -152,12 +68,79 @@ exports.loginSeller = async (req, res) => {
         token
       }
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message
+  } catch (err) {
+    console.error('❌ Registration error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: err.message 
+    });
+  }
+};
+
+// @desc    Login seller
+// @route   POST /api/sellers/login
+// @access  Public
+exports.loginSeller = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ success: false, errors: errors.array() });
+
+    const email = req.body.email.toLowerCase();
+    const password = req.body.password;
+
+    console.log('🔑 Login attempt for:', email);
+
+    // Find seller and explicitly select password field
+    const seller = await Seller.findOne({ email }).select('+password');
+    
+    if (!seller) {
+      console.log('❌ Seller not found for email:', email);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
+
+    console.log('👤 Found seller:', {
+      id: seller._id,
+      email: seller.email,
+      firstName: seller.firstName
+    });
+
+    // ✅ FIX: Use the model's matchPassword method for consistency
+    const isMatch = await seller.matchPassword(password);
+    
+    if (!isMatch) {
+      console.log('❌ Password mismatch for:', email);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
+
+    console.log('✅ Login successful for:', email);
+
+    const token = generateToken(seller._id);
+
+    res.json({
+      success: true,
+      data: {
+        _id: seller._id,
+        firstName: seller.firstName,
+        email: seller.email,
+        mobileNumber: seller.mobileNumber,
+        shop: seller.shop,
+        token
+      }
+    });
+  } catch (err) {
+    console.error('❌ Login error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: err.message 
     });
   }
 };
@@ -190,15 +173,12 @@ exports.getSellerProfile = async (req, res) => {
   }
 };
 
-// 🎯 NEW: Upload shop images endpoint
 // @desc    Upload shop images
 // @route   POST /api/sellers/upload-shop-images
 // @access  Private
 exports.uploadShopImages = async (req, res) => {
   try {
     console.log('📸 Shop image upload request received');
-    console.log('Request body:', req.body);
-    console.log('Files received:', req.files ? req.files.length : 'No files');
 
     const seller = await Seller.findById(req.seller._id);
     if (!seller) {
@@ -208,7 +188,6 @@ exports.uploadShopImages = async (req, res) => {
       });
     }
 
-    // Handle images from request body (base64 encoded images)
     let uploadedImages = [];
     
     if (req.body.images && Array.isArray(req.body.images)) {
@@ -216,7 +195,6 @@ exports.uploadShopImages = async (req, res) => {
       console.log('📷 Processing base64 images:', uploadedImages.length);
     }
 
-    // Handle file uploads if any
     if (req.files && req.files.length > 0) {
       const fileUrls = req.files.map(file => `/uploads/${file.filename}`);
       uploadedImages = [...uploadedImages, ...fileUrls];
@@ -230,10 +208,8 @@ exports.uploadShopImages = async (req, res) => {
       });
     }
 
-    // Update seller's shop images
     seller.shop.images = [...(seller.shop.images || []), ...uploadedImages];
     
-    // Set main image if not already set
     if (!seller.shop.mainImage && uploadedImages.length > 0) {
       seller.shop.mainImage = uploadedImages[0];
     }
@@ -267,18 +243,7 @@ exports.uploadShopImages = async (req, res) => {
 exports.updateSellerProfile = async (req, res) => {
   try {
     console.log('🔄 Profile update request received');
-    console.log('📦 Request body keys:', Object.keys(req.body));
     
-    // 🎯 DEBUGGING: Log shop data specifically
-    if (req.body.shop) {
-      console.log('🏪 Shop data received:', {
-        hasImages: !!req.body.shop.images,
-        imagesCount: req.body.shop.images?.length || 0,
-        hasMainImage: !!req.body.shop.mainImage,
-        firstImageType: req.body.shop.images?.[0]?.substring(0, 20) + '...' || 'none'
-      });
-    }
-
     const seller = await Seller.findById(req.seller._id);
 
     if (!seller) {
@@ -295,12 +260,10 @@ exports.updateSellerProfile = async (req, res) => {
     
     // Update shop details if provided
     if (req.body.shop) {
-      // Initialize shop object if it doesn't exist
       if (!seller.shop) {
         seller.shop = {};
       }
 
-      // Update basic shop details
       if (req.body.shop.name) seller.shop.name = req.body.shop.name;
       if (req.body.shop.address) seller.shop.address = req.body.shop.address;
       if (req.body.shop.gstNumber) seller.shop.gstNumber = req.body.shop.gstNumber;
@@ -316,46 +279,25 @@ exports.updateSellerProfile = async (req, res) => {
       if (req.body.shop.closeTime) seller.shop.closeTime = req.body.shop.closeTime;
       if (req.body.shop.workingDays) seller.shop.workingDays = req.body.shop.workingDays;
       
-      // 🎯 ENHANCED: Handle shop images update with better debugging  
       if (req.body.shop.images) {
-        console.log('📸 Updating shop images');
-        console.log('📊 Images data:', {
-          isArray: Array.isArray(req.body.shop.images),
-          length: req.body.shop.images.length,
-          firstImagePreview: req.body.shop.images[0]?.substring(0, 50) + '...' || 'none'
-        });
-        
-        // Ensure images is an array and initialize if needed
         if (Array.isArray(req.body.shop.images)) {
           seller.shop.images = req.body.shop.images;
-          console.log('✅ Shop images updated successfully');
-        } else {
-          console.log('❌ Shop images is not an array:', typeof req.body.shop.images);
-          seller.shop.images = []; // Initialize as empty array if invalid
         }
       }
 
-      // 🎯 ENHANCED: Handle main image update with debugging
       if (req.body.shop.mainImage) {
-        console.log('🖼️ Updating main shop image');
-        console.log('🔍 Main image preview:', req.body.shop.mainImage.substring(0, 50) + '...');
         seller.shop.mainImage = req.body.shop.mainImage;
-        console.log('✅ Main shop image updated successfully');
       }
 
-      // 🎯 Handle shop description
       if (req.body.shop.description !== undefined) {
         seller.shop.description = req.body.shop.description;
-        console.log('📝 Shop description updated');
       }
       
-      // Location data
       if (req.body.shop.location && req.body.shop.location.coordinates) {
         seller.shop.location = {
           type: 'Point',
           coordinates: req.body.shop.location.coordinates
         };
-        console.log('📍 Shop location updated');
       }
     }
 
@@ -372,26 +314,13 @@ exports.updateSellerProfile = async (req, res) => {
         seller.bankDetails.accountType = req.body.bankDetails.accountType;
     }
 
-    // Update password if provided
+    // ✅ FIX: Handle password update properly
     if (req.body.password) {
+      // Don't hash here - let pre-save hook handle it
       seller.password = req.body.password;
     }
 
-    // 🎯 DEBUGGING: Log seller data before saving
-    console.log('💾 Seller data before saving:', {
-      shopImagesCount: seller.shop.images?.length || 0,
-      hasMainImage: !!seller.shop.mainImage,
-      shopName: seller.shop.name
-    });
-
     const updatedSeller = await seller.save();
-
-    // 🎯 DEBUGGING: Log seller data after saving
-    console.log('✅ Seller data after saving:', {
-      shopImagesCount: updatedSeller.shop.images?.length || 0,
-      hasMainImage: !!updatedSeller.shop.mainImage,
-      shopName: updatedSeller.shop.name
-    });
 
     console.log('✅ Profile updated successfully');
 
@@ -402,7 +331,7 @@ exports.updateSellerProfile = async (req, res) => {
         firstName: updatedSeller.firstName,
         email: updatedSeller.email,
         mobileNumber: updatedSeller.mobileNumber,
-        shop: updatedSeller.shop // 🎯 IMPORTANT: Return full shop data including images
+        shop: updatedSeller.shop
       }
     });
   } catch (error) {
@@ -415,46 +344,46 @@ exports.updateSellerProfile = async (req, res) => {
   }
 };
 
-// Request Password Reset
+// ✅ FIX: Request Password Reset
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email.toLowerCase();
+    console.log('🔍 Checking email for password reset:', email);
     
-    // Find seller by email
     const seller = await Seller.findOne({ email });
     
     if (!seller) {
-      return res.status(404).json({
-        success: false,
-        message: 'Seller with this email does not exist'
+      console.log('❌ No seller found with email:', email);
+      return res.status(404).json({ 
+        success: false, 
+        message: 'No account found with this email' 
       });
     }
-    
-    // Generate reset token
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    
-    // Set token expiry (1 hour from now)
-    seller.resetPasswordToken = resetToken;
-    seller.resetPasswordExpires = Date.now() + 3600000; // 1 hour in milliseconds
-    
-    await seller.save();
-    
-    // In a real implementation, send an email with the reset link
-    // For now, we'll just return success
-    // The reset link would be: `${process.env.FRONTEND_URL}/seller/reset-password/${resetToken}`
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Password reset link sent to your email',
-      // In development, we can return the token directly
-      // In production, remove this and send email instead
-      devToken: resetToken
+
+    console.log('✅ Found seller for password reset:', {
+      id: seller._id,
+      email: seller.email,
+      firstName: seller.firstName
     });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error processing your request'
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    seller.resetPasswordToken = resetToken;
+    seller.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await seller.save();
+
+    console.log('✅ Reset token generated for:', email);
+
+    res.json({ 
+      success: true, 
+      message: 'Password reset link sent to your email', 
+      devToken: resetToken 
+    });
+  } catch (err) {
+    console.error('❌ Forgot password error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: err.message 
     });
   }
 };
@@ -464,7 +393,6 @@ exports.verifyResetToken = async (req, res) => {
   try {
     const { token } = req.params;
     
-    // Find seller by reset token and check if token is not expired
     const seller = await Seller.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
@@ -490,72 +418,82 @@ exports.verifyResetToken = async (req, res) => {
   }
 };
 
-// Reset Password
+// ✅ FIX: Reset Password
 exports.resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
     
-    // Find seller by reset token and check if token is not expired
     const seller = await Seller.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
     });
-    
+
     if (!seller) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password reset token is invalid or has expired'
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Password reset token is invalid or has expired' 
       });
     }
-    
-    // Update password
+
+    // ✅ FIX: Don't hash here - let pre-save hook handle it
     seller.password = password;
-    
-    // Clear reset token fields
     seller.resetPasswordToken = undefined;
     seller.resetPasswordExpires = undefined;
     
     await seller.save();
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Password has been reset successfully'
+
+    console.log('✅ Password reset successfully for:', seller.email);
+
+    res.json({ 
+      success: true, 
+      message: 'Password has been reset successfully' 
     });
-  } catch (error) {
-    console.error('Reset password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error resetting password'
+  } catch (err) {
+    console.error('❌ Reset password error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: err.message 
     });
   }
 };
 
-// Direct Password Reset (no token required)
+// ✅ FIX: Direct Password Reset (no token required)
 exports.resetPasswordDirect = async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // Find seller by email
-    const seller = await Seller.findOne({ email });
+    const emailLC = email.toLowerCase();
+    console.log('🔄 Direct password reset for:', emailLC);
+    
+    const seller = await Seller.findOne({ email: emailLC });
     
     if (!seller) {
+      console.log('❌ No seller found with email:', emailLC);
       return res.status(404).json({
         success: false,
         message: 'Seller with this email does not exist'
       });
     }
     
-    // Update password
+    console.log('✅ Found seller for direct reset:', {
+      id: seller._id,
+      email: seller.email
+    });
+    
+    // ✅ FIX: Don't hash here - let pre-save hook handle it
     seller.password = password;
     
     await seller.save();
+    
+    console.log('✅ Password reset directly for:', emailLC);
     
     return res.status(200).json({
       success: true,
       message: 'Password has been reset successfully'
     });
   } catch (error) {
-    console.error('Reset password error:', error);
+    console.error('❌ Reset password error:', error);
     return res.status(500).json({
       success: false,
       message: 'Error resetting password'
@@ -563,30 +501,35 @@ exports.resetPasswordDirect = async (req, res) => {
   }
 };
 
-// Check if email exists
+// ✅ FIX: Check if email exists
 exports.checkEmailExists = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email.toLowerCase();
+    console.log('🔍 Checking if email exists:', email);
     
-    // Find seller by email
     const seller = await Seller.findOne({ email });
+    const exists = !!seller;
     
-    if (!seller) {
-      return res.status(404).json({
-        success: false,
-        message: 'Seller with this email does not exist'
+    console.log(`${exists ? '✅' : '❌'} Email exists check:`, { email, exists });
+    
+    if (exists) {
+      console.log('📋 Found seller:', {
+        id: seller._id,
+        firstName: seller.firstName,
+        email: seller.email
       });
     }
     
-    return res.status(200).json({
-      success: true,
-      message: 'Email exists'
+    res.json({ 
+      success: true, 
+      exists 
     });
-  } catch (error) {
-    console.error('Check email error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error checking email'
+  } catch (err) {
+    console.error('❌ Email check error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: err.message 
     });
   }
 };

@@ -1,117 +1,48 @@
-const http = require('http');
-const socketIo = require('socket.io');
-//const setupSocketHandlers = require('./socket/socketHandlers');
+/******************************************************************
+ * HTTP / Socket.IO bootstrap -- “npm start” lands here           *
+ ******************************************************************/
+const http    = require('http');
+const socket  = require('socket.io');
+const app     = require('./app');            // ← central Express app
+const path    = require('path');
 
-console.log('Starting server...');
-console.log('Loading app module...');
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const PORT     = process.env.PORT     || 5000;
 
-// Define server variable in the global scope
-let httpServer;
+/* ─────────────  spin HTTP server + Socket.IO  ───────────── */
+const httpServer = http.createServer(app);
+const io         = socket(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET','POST']
+  }
+});
 
-try {
-  const { app } = require('./app');
-  console.log('App module loaded successfully');
+/* (optional) socket handlers */
+// require('./socket/socketHandlers')(io);
 
-  // Create HTTP server
-  httpServer = http.createServer(app);
+httpServer.listen(PORT, () =>
+  console.log(`⚡  Server running in ${NODE_ENV} mode on port ${PORT}`)
+);
 
-  // Setup Socket.IO with CORS configuration
-  const io = socketIo(httpServer, {
-    cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3000",
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: true
-    },
-    transports: ['websocket', 'polling']
-  });
+/* ─────────────  graceful-shutdown helpers  ───────────── */
+const shutdown = (msg, code = 0) => {
+  console.log(msg);
+  httpServer.close(() => process.exit(code));
+};
 
-  // Setup socket handlers
-  //setupSocketHandlers(io);
+process.on('unhandledRejection', (err) =>
+  shutdown(`❌  Unhandled Rejection: ${err.message}`, 1)
+);
+process.on('uncaughtException',  (err) =>
+  shutdown(`❌  Uncaught Exception: ${err.message}`, 1)
+);
+process.on('SIGTERM', () => shutdown('🛑  SIGTERM – shutting down'));
+process.on('SIGINT',  () => shutdown('🛑  SIGINT  – shutting down'));
 
-  // Enhanced logging for server startup
-  console.log(`
-🚀 ===============================
-   ZAMMER SERVER STARTING...
-===============================
-📡 Socket.IO: ENABLED
-🌐 Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:3000"}
-🔗 Transport: WebSocket + Polling
-⚡ Real-time Features: ACTIVE
-===============================`);
-
-  const PORT = process.env.PORT || 5000;
-  console.log(`Using port: ${PORT}`);
-
-  // Start server
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-✅ ===============================
-   SERVER RUNNING SUCCESSFULLY!
-===============================
-🌐 HTTP Server: http://localhost:${PORT}
-📡 Socket Server: ws://localhost:${PORT}
-🛒 Order Management: READY
-📱 Real-time Updates: ACTIVE
-===============================`);
-  });
-
-} catch (error) {
-  console.error('❌ CRITICAL ERROR DURING SERVER STARTUP:');
-  console.error(error);
-  process.exit(1);
+/* ─────────────  prod-static setup (React build)  ───────────── */
+if (NODE_ENV === 'production') {
+  const buildPath = path.join(__dirname, '..', 'frontend', 'build');
+  app.use(express.static(buildPath));
+  app.get('*', (_req, res) => res.sendFile(path.join(buildPath, 'index.html')));
 }
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-  console.error('Error:', err.message);
-  
-  // Close server & exit process
-  if (httpServer) {
-    httpServer.close(() => {
-      process.exit(1);
-    });
-  } else {
-    process.exit(1);
-  }
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-  console.error('Error:', err.message);
-  
-  if (httpServer) {
-    httpServer.close(() => {
-      process.exit(1);
-    });
-  } else {
-    process.exit(1);
-  }
-});
-
-// Graceful shutdown handlers
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully...');
-  if (httpServer) {
-    httpServer.close(() => {
-      console.log('✅ HTTP server closed');
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
-
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully...');
-  if (httpServer) {
-    httpServer.close(() => {
-      console.log('✅ HTTP server closed');
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
