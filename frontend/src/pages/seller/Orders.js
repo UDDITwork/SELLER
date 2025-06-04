@@ -159,28 +159,28 @@ const Orders = () => {
   // Get status color classes
   const getStatusColor = (status) => {
     const statusMap = {
-      'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'Processing': 'bg-blue-100 text-blue-800 border-blue-200',
-      'Shipped': 'bg-purple-100 text-purple-800 border-purple-200',
-      'Delivered': 'bg-green-100 text-green-800 border-green-200',
-      'Cancelled': 'bg-red-100 text-red-800 border-red-200'
+      'Pending': { backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d' },
+      'Processing': { backgroundColor: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd' },
+      'Shipped': { backgroundColor: '#e0e7ff', color: '#3730a3', border: '1px solid #a5b4fc' },
+      'Delivered': { backgroundColor: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7' },
+      'Cancelled': { backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' }
     };
-    return statusMap[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return statusMap[status] || { backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db' };
   };
 
   // Get tab color classes
   const getTabColor = (tabKey) => {
     const tab = statusTabs.find(t => t.key === tabKey);
-    if (!tab) return 'border-gray-300 text-gray-600';
+    if (!tab) return { borderColor: '#d1d5db', color: '#6b7280' };
     
     const colorMap = {
-      'yellow': 'border-yellow-500 text-yellow-700 bg-yellow-50',
-      'blue': 'border-blue-500 text-blue-700 bg-blue-50',
-      'purple': 'border-purple-500 text-purple-700 bg-purple-50',
-      'red': 'border-red-500 text-red-700 bg-red-50'
+      'yellow': { borderColor: '#f59e0b', color: '#92400e', backgroundColor: '#fef3c7' },
+      'blue': { borderColor: '#3b82f6', color: '#1e40af', backgroundColor: '#dbeafe' },
+      'purple': { borderColor: '#8b5cf6', color: '#5b21b6', backgroundColor: '#e9d5ff' },
+      'red': { borderColor: '#ef4444', color: '#991b1b', backgroundColor: '#fee2e2' }
     };
     
-    return colorMap[tab.color] || 'border-gray-300 text-gray-600';
+    return colorMap[tab.color] || { borderColor: '#d1d5db', color: '#6b7280' };
   };
 
   // Format date
@@ -197,251 +197,876 @@ const Orders = () => {
 
   return (
     <SellerLayout>
-      <div className="orders-page">
-        {/* Header Section */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Orders Management</h1>
-            <p className="text-gray-600 mt-1">
-              Manage and track all your orders
-              {socketConnected && (
-                <span className="ml-2 inline-flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
-                  <span className="text-xs text-green-600">Live updates</span>
-                </span>
-              )}
-            </p>
-          </div>
+      <style jsx>{`
+        .container {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #f9fafb 0%, #ffffff 50%, rgba(254, 215, 170, 0.3) 100%);
+        }
+
+        .main-wrapper {
+          max-width: 1536px;
+          margin: 0 auto;
+          padding: 1.5rem 1rem;
+        }
+
+        @media (min-width: 640px) {
+          .main-wrapper {
+            padding: 2rem 1.5rem;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .main-wrapper {
+            padding: 2rem 2rem;
+          }
+        }
+
+        /* Header Styles */
+        .header {
+          position: relative;
+          margin-bottom: 2rem;
+        }
+
+        .header::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(45deg, #3b82f6, #06b6d4);
+          border-radius: 1.5rem;
+          transform: rotate(1deg);
+          opacity: 0.1;
+        }
+
+        .header-content {
+          position: relative;
+          background: white;
+          border-radius: 1.5rem;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          border: 1px solid #f3f4f6;
+          padding: 2rem;
+        }
+
+        .header-inner {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .header-left h1 {
+          font-size: 2rem;
+          font-weight: bold;
+          background: linear-gradient(45deg, #111827, #3b82f6, #06b6d4);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .header-left p {
+          color: #6b7280;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .live-indicator {
+          display: inline-flex;
+          align-items: center;
+          margin-left: 0.5rem;
+        }
+
+        .live-dot {
+          width: 0.5rem;
+          height: 0.5rem;
+          background: #10b981;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+          margin-right: 0.25rem;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        .live-text {
+          font-size: 0.75rem;
+          color: #059669;
+          font-weight: 500;
+        }
+
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .stats-card {
+          background: white;
+          border-radius: 0.75rem;
+          border: 1px solid #e5e7eb;
+          padding: 1rem;
+          text-align: center;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-label {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin: 0;
+        }
+
+        .stats-value {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #f97316;
+          margin: 0;
+        }
+
+        .refresh-btn {
+          background: linear-gradient(45deg, #f97316, #f59e0b);
+          color: white;
+          padding: 0.75rem 1rem;
+          border-radius: 0.75rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+          background: linear-gradient(45deg, #ea580c, #d97706);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .refresh-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+          .header-left h1 {
+            font-size: 1.5rem;
+          }
+          .header-inner {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .header-right {
+            justify-content: space-between;
+          }
+        }
+
+        /* Statistics Cards */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+          .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        .stat-card {
+          background: white;
+          border-radius: 0.75rem;
+          border: 1px solid #e5e7eb;
+          padding: 1.5rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+          transition: all 0.2s;
+          cursor: pointer;
+        }
+
+        .stat-card:hover {
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .stat-info p {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #6b7280;
+          margin: 0 0 0.25rem 0;
+        }
+
+        .stat-info .number {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #111827;
+          margin: 0;
+        }
+
+        .stat-icon {
+          font-size: 1.5rem;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+          border-bottom: 1px solid #e5e7eb;
+          margin-bottom: 1.5rem;
+          overflow-x: auto;
+        }
+
+        .tab-list {
+          display: flex;
+          gap: 0;
+          min-width: max-content;
+        }
+
+        .tab-button {
+          padding: 1rem 1.5rem;
+          border-bottom: 2px solid transparent;
+          font-weight: 500;
+          font-size: 0.875rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: all 0.2s;
+          color: #6b7280;
+          background: none;
+          border-left: none;
+          border-right: none;
+          border-top: none;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+
+        .tab-button:hover {
+          color: #374151;
+          border-bottom-color: #d1d5db;
+        }
+
+        .tab-button.active {
+          color: #f97316;
+          border-bottom-color: #f97316;
+        }
+
+        .tab-icon {
+          margin-right: 0.25rem;
+        }
+
+        .tab-badge {
+          margin-left: 0.5rem;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+          border-radius: 9999px;
+          background: #f3f4f6;
+          color: #6b7280;
+        }
+
+        .tab-button.active .tab-badge {
+          background: #fed7aa;
+          color: #c2410c;
+        }
+
+        /* Orders List */
+        .orders-container {
+          background: white;
+          border-radius: 0.75rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+          border: 1px solid #e5e7eb;
+          overflow: hidden;
+        }
+
+        .loading-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 3rem;
+        }
+
+        .spinner {
+          animation: spin 1s linear infinite;
+          border-radius: 50%;
+          width: 2rem;
+          height: 2rem;
+          border: 2px solid transparent;
+          border-top: 2px solid #f97316;
+          margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+          color: #6b7280;
+          font-weight: 500;
+        }
+
+        .orders-list {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .order-item {
+          padding: 1.5rem;
+          border-bottom: 1px solid #f3f4f6;
+          transition: background-color 0.2s;
+        }
+
+        .order-item:hover {
+          background: #f9fafb;
+        }
+
+        .order-item:last-child {
+          border-bottom: none;
+        }
+
+        .order-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .order-left {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .order-info .order-number {
+          font-weight: 600;
+          color: #111827;
+          margin: 0 0 0.25rem 0;
+          font-size: 1.125rem;
+        }
+
+        .order-info .order-date {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin: 0;
+        }
+
+        .status-badge {
+          padding: 0.5rem 0.75rem;
+          border-radius: 9999px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          white-space: nowrap;
+        }
+
+        .order-right {
+          text-align: right;
+        }
+
+        .order-price {
+          font-weight: bold;
+          color: #111827;
+          margin: 0 0 0.25rem 0;
+          font-size: 1.125rem;
+        }
+
+        .order-payment {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin: 0;
+        }
+
+        /* Customer Info */
+        .customer-info {
+          margin: 1rem 0;
+          padding: 1rem;
+          background: #f9fafb;
+          border-radius: 0.75rem;
+          border: 1px solid #f3f4f6;
+        }
+
+        .customer-title {
+          font-weight: 500;
+          color: #111827;
+          margin: 0 0 0.75rem 0;
+        }
+
+        .customer-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+          font-size: 0.875rem;
+        }
+
+        @media (min-width: 768px) {
+          .customer-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        .customer-field {
+          display: flex;
+        }
+
+        .field-label {
+          color: #6b7280;
+          margin-right: 0.5rem;
+          min-width: 4rem;
+        }
+
+        .field-value {
+          font-weight: 500;
+          color: #111827;
+        }
+
+        /* Order Items */
+        .order-items {
+          margin: 1rem 0;
+        }
+
+        .items-title {
+          font-weight: 500;
+          color: #111827;
+          margin: 0 0 0.75rem 0;
+        }
+
+        .items-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background: #f9fafb;
+          border-radius: 0.5rem;
+        }
+
+        .item-image {
+          width: 3rem;
+          height: 3rem;
+          background: #e5e7eb;
+          border-radius: 0.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .item-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .item-placeholder-icon {
+          width: 1.5rem;
+          height: 1.5rem;
+          color: #9ca3af;
+        }
+
+        .item-details {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .item-name {
+          font-weight: 500;
+          color: #111827;
+          margin: 0 0 0.25rem 0;
+          word-break: break-word;
+        }
+
+        .item-specs {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin: 0;
+        }
+
+        .item-price {
+          text-align: right;
+          flex-shrink: 0;
+        }
+
+        .item-price p {
+          font-weight: 500;
+          color: #111827;
+          margin: 0;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        .action-btn {
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+
+        .btn-processing {
+          background: #3b82f6;
+          color: white;
+        }
+
+        .btn-processing:hover {
+          background: #2563eb;
+        }
+
+        .btn-cancel {
+          background: #ef4444;
+          color: white;
+        }
+
+        .btn-cancel:hover {
+          background: #dc2626;
+        }
+
+        .btn-shipped {
+          background: #8b5cf6;
+          color: white;
+        }
+
+        .btn-shipped:hover {
+          background: #7c3aed;
+        }
+
+        .btn-delivered {
+          background: #10b981;
+          color: white;
+        }
+
+        .btn-delivered:hover {
+          background: #059669;
+        }
+
+        /* Empty State */
+        .empty-state {
+          text-align: center;
+          padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+          width: 4rem;
+          height: 4rem;
+          margin: 0 auto 1rem auto;
+          color: #9ca3af;
+        }
+
+        .empty-title {
+          color: #6b7280;
+          font-size: 1.125rem;
+          margin: 0 0 0.5rem 0;
+          font-weight: 500;
+        }
+
+        .empty-subtitle {
+          color: #9ca3af;
+          font-size: 0.875rem;
+          margin: 0;
+        }
+
+        @media (max-width: 768px) {
+          .main-wrapper {
+            padding: 1rem;
+          }
           
-          <div className="flex items-center space-x-4">
-            {stats && (
-              <div className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="text-sm text-gray-500">Today's Orders</div>
-                <div className="text-2xl font-bold text-orange-600">
-                  {stats.todayOrdersCount || 0}
+          .header-content {
+            padding: 1.5rem;
+          }
+          
+          .order-item {
+            padding: 1rem;
+          }
+          
+          .order-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          
+          .order-right {
+            text-align: left;
+          }
+          
+          .customer-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .action-buttons {
+            justify-content: stretch;
+          }
+          
+          .action-btn {
+            flex: 1;
+            text-align: center;
+          }
+        }
+      `}</style>
+      
+      <div className="container">
+        <div className="main-wrapper">
+          {/* Header Section */}
+          <div className="header">
+            <div className="header-content">
+              <div className="header-inner">
+                <div className="header-left">
+                  <h1>Orders Management</h1>
+                  <p>
+                    Manage and track all your orders
+                    {socketConnected && (
+                      <span className="live-indicator">
+                        <span className="live-dot"></span>
+                        <span className="live-text">Live updates</span>
+                      </span>
+                    )}
+                  </p>
+                </div>
+                
+                <div className="header-right">
+                  {stats && (
+                    <div className="stats-card">
+                      <p className="stats-label">Today's Orders</p>
+                      <p className="stats-value">{stats.todayOrdersCount || 0}</p>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      fetchOrders();
+                      fetchStats();
+                    }}
+                    className="refresh-btn"
+                  >
+                    <svg className="refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                  </button>
                 </div>
               </div>
-            )}
-            
-            <button
-              onClick={() => {
-                fetchOrders();
-                fetchStats();
-              }}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh
-            </button>
-          </div>
-        </div>
-
-        {/* Statistics Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            {statusTabs.map((tab) => {
-              const count = stats.statusCounts?.[tab.key] || 0;
-              return (
-                <div
-                  key={tab.key}
-                  className={`bg-white rounded-lg shadow-sm p-4 border cursor-pointer transition-all hover:shadow-md ${
-                    activeTab === tab.key ? getTabColor(tab.key) : 'border-gray-200'
-                  }`}
-                  onClick={() => setActiveTab(tab.key)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">{tab.label}</p>
-                      <p className="text-2xl font-bold text-gray-900">{count}</p>
-                    </div>
-                    <div className="text-2xl">{tab.icon}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
-            {statusTabs.map((tab) => {
-              const count = stats?.statusCounts?.[tab.key] || 0;
-              const isActive = activeTab === tab.key;
-              
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
-                    isActive
-                      ? 'border-orange-500 text-orange-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                  {count > 0 && (
-                    <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                      isActive 
-                        ? 'bg-orange-100 text-orange-800' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Orders List */}
-        <div className="bg-white rounded-lg shadow-sm">
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-              <span className="ml-3 text-gray-600">Loading orders...</span>
             </div>
-          ) : filteredOrders.length > 0 ? (
-            <div className="divide-y divide-gray-200">
-              {filteredOrders.map((order) => (
-                <div key={order._id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Order #{order.orderNumber}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {formatDate(order.createdAt)}
+          </div>
+
+          {/* Statistics Cards */}
+          {stats && (
+            <div className="stats-grid">
+              {statusTabs.map((tab) => {
+                const count = stats.statusCounts?.[tab.key] || 0;
+                const tabColor = getTabColor(tab.key);
+                return (
+                  <div
+                    key={tab.key}
+                    className="stat-card"
+                    onClick={() => setActiveTab(tab.key)}
+                    style={activeTab === tab.key ? {
+                      borderColor: tabColor.borderColor,
+                      backgroundColor: tabColor.backgroundColor
+                    } : {}}
+                  >
+                    <div className="stat-content">
+                      <div className="stat-info">
+                        <p style={{ color: activeTab === tab.key ? tabColor.color : '#6b7280' }}>
+                          {tab.label}
+                        </p>
+                        <p className="number" style={{ color: activeTab === tab.key ? tabColor.color : '#111827' }}>
+                          {count}
                         </p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                    
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900">₹{order.totalPrice}</p>
-                      <p className="text-sm text-gray-600">{order.paymentMethod}</p>
+                      <div className="stat-icon">{tab.icon}</div>
                     </div>
                   </div>
-
-                  {/* Customer Info */}
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-2">Customer Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Name: </span>
-                        <span className="font-medium">{order.user?.name}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Email: </span>
-                        <span className="font-medium">{order.user?.email}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Phone: </span>
-                        <span className="font-medium">{order.user?.mobileNumber || order.shippingAddress?.phone}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">City: </span>
-                        <span className="font-medium">{order.shippingAddress?.city}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Order Items */}
-                  <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Order Items</h4>
-                    <div className="space-y-2">
-                      {order.orderItems?.map((item, index) => (
-                        <div key={index} className="flex items-center space-x-3 p-2 bg-gray-50 rounded">
-                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                            {item.image ? (
-                              <img 
-                                src={item.image} 
-                                alt={item.name}
-                                className="w-full h-full object-cover rounded"
-                              />
-                            ) : (
-                              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-900">{item.name}</p>
-                            <p className="text-sm text-gray-600">
-                              Qty: {item.quantity} | Size: {item.size} | Color: {item.color}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">₹{item.price}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2">
-                    {order.status === 'Pending' && (
-                      <>
-                        <button
-                          onClick={() => handleStatusUpdate(order._id, 'Processing')}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium"
-                        >
-                          Mark Ready to Ship
-                        </button>
-                        <button
-                          onClick={() => handleStatusUpdate(order._id, 'Cancelled')}
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium"
-                        >
-                          Cancel Order
-                        </button>
-                      </>
-                    )}
-                    
-                    {order.status === 'Processing' && (
-                      <button
-                        onClick={() => handleStatusUpdate(order._id, 'Shipped')}
-                        className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm font-medium"
-                      >
-                        Mark as Shipped
-                      </button>
-                    )}
-                    
-                    {order.status === 'Shipped' && (
-                      <button
-                        onClick={() => handleStatusUpdate(order._id, 'Delivered')}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm font-medium"
-                      >
-                        Mark as Delivered
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <p className="text-gray-600 text-lg mb-2">No {activeTab.toLowerCase()} orders found</p>
-              <p className="text-gray-500 text-sm">
-                {activeTab === 'Pending' 
-                  ? 'New orders will appear here when customers make purchases.'
-                  : `No orders with ${activeTab.toLowerCase()} status at the moment.`
-                }
-              </p>
+                );
+              })}
             </div>
           )}
+
+          {/* Tab Navigation */}
+          <div className="tab-nav">
+            <div className="tab-list">
+              {statusTabs.map((tab) => {
+                const count = stats?.statusCounts?.[tab.key] || 0;
+                const isActive = activeTab === tab.key;
+                
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`tab-button ${isActive ? 'active' : ''}`}
+                  >
+                    <span className="tab-icon">{tab.icon}</span>
+                    <span>{tab.label}</span>
+                    {count > 0 && (
+                      <span className="tab-badge">{count}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Orders List */}
+          <div className="orders-container">
+            {loading ? (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <span className="loading-text">Loading orders...</span>
+              </div>
+            ) : filteredOrders.length > 0 ? (
+              <div className="orders-list">
+                {filteredOrders.map((order) => (
+                  <div key={order._id} className="order-item">
+                    <div className="order-header">
+                      <div className="order-left">
+                        <div className="order-info">
+                          <p className="order-number">Order #{order.orderNumber}</p>
+                          <p className="order-date">{formatDate(order.createdAt)}</p>
+                        </div>
+                        <span className="status-badge" style={getStatusColor(order.status)}>
+                          {order.status}
+                        </span>
+                      </div>
+                      
+                      <div className="order-right">
+                        <p className="order-price">₹{order.totalPrice}</p>
+                        <p className="order-payment">{order.paymentMethod}</p>
+                      </div>
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="customer-info">
+                      <h4 className="customer-title">Customer Details</h4>
+                      <div className="customer-grid">
+                        <div className="customer-field">
+                          <span className="field-label">Name:</span>
+                          <span className="field-value">{order.user?.name}</span>
+                        </div>
+                        <div className="customer-field">
+                          <span className="field-label">Email:</span>
+                          <span className="field-value">{order.user?.email}</span>
+                        </div>
+                        <div className="customer-field">
+                          <span className="field-label">Phone:</span>
+                          <span className="field-value">{order.user?.mobileNumber || order.shippingAddress?.phone}</span>
+                        </div>
+                        <div className="customer-field">
+                          <span className="field-label">City:</span>
+                          <span className="field-value">{order.shippingAddress?.city}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Order Items */}
+                    <div className="order-items">
+                      <h4 className="items-title">Order Items</h4>
+                      <div className="items-list">
+                        {order.orderItems?.map((item, index) => (
+                          <div key={index} className="item">
+                            <div className="item-image">
+                              {item.image ? (
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name}
+                                />
+                              ) : (
+                                <svg className="item-placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="item-details">
+                              <p className="item-name">{item.name}</p>
+                              <p className="item-specs">
+                                Qty: {item.quantity} | Size: {item.size} | Color: {item.color}
+                              </p>
+                            </div>
+                            <div className="item-price">
+                              <p>₹{item.price}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="action-buttons">
+                      {order.status === 'Pending' && (
+                        <>
+                          <button
+                            onClick={() => handleStatusUpdate(order._id, 'Processing')}
+                            className="action-btn btn-processing"
+                          >
+                            Mark Ready to Ship
+                          </button>
+                          <button
+                            onClick={() => handleStatusUpdate(order._id, 'Cancelled')}
+                            className="action-btn btn-cancel"
+                          >
+                            Cancel Order
+                          </button>
+                        </>
+                      )}
+                      
+                      {order.status === 'Processing' && (
+                        <button
+                          onClick={() => handleStatusUpdate(order._id, 'Shipped')}
+                          className="action-btn btn-shipped"
+                        >
+                          Mark as Shipped
+                        </button>
+                      )}
+                      
+                      {order.status === 'Shipped' && (
+                        <button
+                          onClick={() => handleStatusUpdate(order._id, 'Delivered')}
+                          className="action-btn btn-delivered"
+                        >
+                          Mark as Delivered
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <div>
+                  <svg className="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="empty-title">No {activeTab.toLowerCase()} orders found</p>
+                <p className="empty-subtitle">
+                  {activeTab === 'Pending' 
+                    ? 'New orders will appear here when customers make purchases.'
+                    : `No orders with ${activeTab.toLowerCase()} status at the moment.`
+                  }
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </SellerLayout>

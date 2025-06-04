@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { resetPassword, verifyResetToken } from '../../services/sellerService';
-import './SellerResetPassword.css'; // ✅ new CSS
+import './SellerResetPassword.css';
 
 const ResetPasswordSchema = Yup.object().shape({
   password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
@@ -40,10 +40,10 @@ const SellerResetPassword = () => {
   if (!isValidToken) {
     return (
       <div className="auth-container">
-        <div className="auth-card text-center">
+        <div className="auth-card" style={{ textAlign: 'center' }}>
           <h2 className="auth-title">Invalid Reset Link</h2>
           <p className="auth-subtitle">This password reset link is invalid or expired.</p>
-          <Link to="/seller/forgot-password" className="btn-primary mt-4">Request New Reset Link</Link>
+          <Link to="/seller/forgot-password" className="btn-primary" style={{ marginTop: '16px', display: 'inline-block' }}>Request New Reset Link</Link>
         </div>
       </div>
     );
@@ -52,10 +52,10 @@ const SellerResetPassword = () => {
   if (passwordReset) {
     return (
       <div className="auth-container">
-        <div className="auth-card text-center">
+        <div className="auth-card" style={{ textAlign: 'center' }}>
           <h2 className="auth-title">Password Reset Complete</h2>
           <p className="auth-subtitle">Your password has been reset successfully.</p>
-          <Link to="/seller/login" className="btn-primary mt-4">Sign In</Link>
+          <Link to="/seller/login" className="btn-primary" style={{ marginTop: '16px', display: 'inline-block' }}>Sign In</Link>
         </div>
       </div>
     );

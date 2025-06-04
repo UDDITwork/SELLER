@@ -193,23 +193,863 @@ const AddProduct = () => {
 
   return (
     <SellerLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <style jsx>{`
+        .container {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #f9fafb 0%, #ffffff 50%, rgba(254, 215, 170, 0.3) 100%);
+        }
+
+        .main-wrapper {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem 1rem;
+        }
+
+        @media (min-width: 640px) {
+          .main-wrapper {
+            padding: 2rem 1.5rem;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .main-wrapper {
+            padding: 2rem 2rem;
+          }
+        }
+
+        /* Header Styles */
+        .header {
+          position: relative;
+          margin-bottom: 3rem;
+        }
+
+        .header::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(45deg, #ea580c, #f97316, #f59e0b);
+          border-radius: 1.5rem;
+          transform: rotate(1deg);
+          opacity: 0.1;
+        }
+
+        .header-content {
+          position: relative;
+          background: white;
+          border-radius: 1.5rem;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          border: 1px solid #f3f4f6;
+          padding: 2rem;
+        }
+
+        .header-inner {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .header-icon {
+          width: 4rem;
+          height: 4rem;
+          background: linear-gradient(135deg, #f97316, #f59e0b);
+          border-radius: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-title {
+          font-size: 2.5rem;
+          font-weight: bold;
+          background: linear-gradient(45deg, #111827, #374151, #ea580c);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin: 0;
+        }
+
+        .header-subtitle {
+          font-size: 1.125rem;
+          color: #6b7280;
+          margin: 0.5rem 0 0 0;
+        }
+
+        @media (max-width: 768px) {
+          .header-title {
+            font-size: 1.875rem;
+          }
+          .header-subtitle {
+            font-size: 1rem;
+          }
+          .header-icon {
+            width: 3rem;
+            height: 3rem;
+          }
+        }
+
+        /* Form Styles */
+        .form-container {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+        }
+
+        /* Section Styles */
+        .section {
+          position: relative;
+        }
+
+        .section::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 1rem;
+          background: linear-gradient(45deg, #f97316, #f59e0b);
+          filter: blur(8px);
+          opacity: 0.2;
+          transition: opacity 0.3s;
+        }
+
+        .section:hover::before {
+          opacity: 0.3;
+        }
+
+        .section-content {
+          position: relative;
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(8px);
+          padding: 2rem;
+          border-radius: 1rem;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .section-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .section-number {
+          width: 2.5rem;
+          height: 2.5rem;
+          background: linear-gradient(135deg, #f97316, #f59e0b);
+          border-radius: 0.75rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+          margin-right: 1rem;
+          color: white;
+          font-size: 1.125rem;
+          font-weight: bold;
+        }
+
+        .section-title {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #374151;
+          margin: 0;
+        }
+
+        /* Grid Styles */
+        .grid {
+          display: grid;
+          gap: 2rem;
+        }
+
+        .grid-cols-1 {
+          grid-template-columns: 1fr;
+        }
+
+        .grid-cols-2 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-4 {
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media (min-width: 1024px) {
+          .lg\\:grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (min-width: 768px) {
+          .md\\:grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .md\\:grid-cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        .col-span-2 {
+          grid-column: span 2;
+        }
+
+        /* Form Elements */
+        .form-group {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .form-label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+          display: block;
+          width: 100%;
+          padding: 1rem 1.25rem;
+          background: rgba(255, 255, 255, 0.7);
+          border: 2px solid #e5e7eb;
+          border-radius: 0.75rem;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          font-size: 1rem;
+          backdrop-filter: blur(4px);
+          transition: all 0.2s;
+        }
+
+        .form-input:focus {
+          outline: none;
+          ring: 2px;
+          ring-color: #f97316;
+          border-color: transparent;
+        }
+
+        .form-input:disabled {
+          opacity: 0.5;
+        }
+
+        .form-textarea {
+          resize: none;
+          min-height: 120px;
+        }
+
+        .form-select {
+          display: block;
+          width: 100%;
+          padding: 1rem 1.25rem;
+          background: rgba(255, 255, 255, 0.7);
+          border: 2px solid #e5e7eb;
+          border-radius: 0.75rem;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          font-size: 1rem;
+          backdrop-filter: blur(4px);
+          transition: all 0.2s;
+        }
+
+        .form-select:focus {
+          outline: none;
+          ring: 2px;
+          ring-color: #f97316;
+          border-color: transparent;
+        }
+
+        .error-message {
+          color: #ef4444;
+          font-size: 0.875rem;
+          margin-top: 0.5rem;
+          font-weight: 500;
+        }
+
+        .help-text {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin-top: 0.5rem;
+          font-style: italic;
+        }
+
+        /* Character Counter */
+        .char-counter {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 0.5rem;
+        }
+
+        .char-count {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+
+        .char-count.warning {
+          color: #ea580c;
+        }
+
+        .progress-bar {
+          width: 8rem;
+          background: #e5e7eb;
+          border-radius: 9999px;
+          height: 0.5rem;
+        }
+
+        .progress-fill {
+          height: 0.5rem;
+          border-radius: 9999px;
+          transition: all 0.3s;
+          background: #10b981;
+        }
+
+        .progress-fill.warning {
+          background: #f97316;
+        }
+
+        /* Pricing Section */
+        .pricing-section .section::before {
+          background: linear-gradient(45deg, #10b981, #059669);
+        }
+
+        .pricing-section .section-number {
+          background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .input-group {
+          position: relative;
+        }
+
+        .input-prefix {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6b7280;
+          font-size: 1.125rem;
+          pointer-events: none;
+        }
+
+        .input-with-prefix {
+          padding-left: 2.5rem;
+        }
+
+        .discount-card {
+          margin-top: 1.5rem;
+          padding: 1.5rem;
+          background: linear-gradient(45deg, #ecfdf5, #d1fae5);
+          border: 2px solid #10b981;
+          border-radius: 1rem;
+        }
+
+        .discount-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .discount-left {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .discount-icon {
+          width: 3rem;
+          height: 3rem;
+          background: #10b981;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .discount-info h4 {
+          color: #065f46;
+          font-size: 1.125rem;
+          font-weight: bold;
+          margin: 0;
+        }
+
+        .discount-info p {
+          color: #059669;
+          font-size: 0.875rem;
+          margin: 0;
+        }
+
+        .discount-right {
+          text-align: right;
+        }
+
+        .discount-price {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #065f46;
+        }
+
+        .discount-original {
+          font-size: 0.875rem;
+          color: #6b7280;
+          text-decoration: line-through;
+        }
+
+        /* Variants Section */
+        .variants-section .section::before {
+          background: linear-gradient(45deg, #8b5cf6, #ec4899);
+        }
+
+        .variants-section .section-number {
+          background: linear-gradient(135deg, #8b5cf6, #ec4899);
+        }
+
+        .variants-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .variant-item {
+          position: relative;
+          padding: 1.5rem;
+          background: linear-gradient(135deg, #f9fafb, #ffffff);
+          border: 2px solid #e5e7eb;
+          border-radius: 1rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .variant-label {
+          position: absolute;
+          top: -0.75rem;
+          left: 1.5rem;
+          background: #8b5cf6;
+          color: white;
+          padding: 0.25rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.875rem;
+          font-weight: 600;
+        }
+
+        .variant-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+          margin-top: 1rem;
+        }
+
+        @media (min-width: 768px) {
+          .variant-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .variant-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        .color-preview {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .color-swatch {
+          width: 3rem;
+          height: 3rem;
+          border: 2px solid #d1d5db;
+          border-radius: 0.75rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .color-input {
+          flex: 1;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.875rem;
+          border: 2px solid #e5e7eb;
+          border-radius: 0.5rem;
+          transition: all 0.2s;
+        }
+
+        .color-input:focus {
+          outline: none;
+          ring: 2px;
+          ring-color: #8b5cf6;
+          border-color: transparent;
+        }
+
+        .remove-btn {
+          position: absolute;
+          top: -0.75rem;
+          right: -0.75rem;
+          width: 2rem;
+          height: 2rem;
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-btn:hover {
+          background: #dc2626;
+        }
+
+        .add-variant-btn {
+          width: 100%;
+          padding: 1rem;
+          border: 2px dashed #8b5cf6;
+          border-radius: 1rem;
+          color: #8b5cf6;
+          background: transparent;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .add-variant-btn:hover {
+          color: #7c3aed;
+          border-color: #7c3aed;
+          background: #f3f4f6;
+        }
+
+        /* Images Section */
+        .images-section .section::before {
+          background: linear-gradient(45deg, #3b82f6, #06b6d4);
+        }
+
+        .images-section .section-number {
+          background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        }
+
+        .images-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+          margin-bottom: 2rem;
+        }
+
+        @media (min-width: 640px) {
+          .images-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .images-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        .image-item {
+          position: relative;
+        }
+
+        .image-container {
+          aspect-ratio: 1;
+          background: #f3f4f6;
+          border-radius: 1rem;
+          overflow: hidden;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s;
+        }
+
+        .image-item:hover .image-container img {
+          transform: scale(1.05);
+        }
+
+        .image-remove-btn {
+          position: absolute;
+          top: -0.75rem;
+          right: -0.75rem;
+          width: 2rem;
+          height: 2rem;
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+          opacity: 0;
+        }
+
+        .image-item:hover .image-remove-btn {
+          opacity: 1;
+        }
+
+        .image-remove-btn:hover {
+          background: #dc2626;
+        }
+
+        .main-badge {
+          position: absolute;
+          bottom: 0.5rem;
+          left: 0.5rem;
+          background: #10b981;
+          color: white;
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 9999px;
+          font-weight: 500;
+        }
+
+        .upload-area {
+          border: 2px dashed #3b82f6;
+          border-radius: 1rem;
+          padding: 2rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+          border-color: #2563eb;
+          background: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-content {
+          text-align: center;
+        }
+
+        .upload-icon {
+          margin: 0 auto 1rem auto;
+          width: 4rem;
+          height: 4rem;
+          color: #3b82f6;
+        }
+
+        .upload-title {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.5rem;
+        }
+
+        .upload-subtitle {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+
+        .upload-loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .spinner {
+          animation: spin 1s linear infinite;
+          border-radius: 50%;
+          width: 1.25rem;
+          height: 1.25rem;
+          border: 2px solid transparent;
+          border-top: 2px solid #3b82f6;
+          margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .hidden {
+          display: none;
+        }
+
+        /* Features Section */
+        .features-section .section::before {
+          background: linear-gradient(45deg, #6366f1, #8b5cf6);
+        }
+
+        .features-section .section-number {
+          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+          .features-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        .checkbox-card {
+          display: flex;
+          align-items: center;
+          padding: 1rem;
+          background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+          border-radius: 0.75rem;
+          border: 1px solid #d1d5db;
+        }
+
+        .checkbox-card.purple {
+          background: linear-gradient(45deg, #faf5ff, #f3e8ff);
+          border-color: #8b5cf6;
+        }
+
+        .checkbox-card.pink {
+          background: linear-gradient(45deg, #fdf2f8, #fce7f3);
+          border-color: #ec4899;
+        }
+
+        .checkbox-input {
+          width: 1.25rem;
+          height: 1.25rem;
+          margin-right: 1rem;
+          accent-color: #8b5cf6;
+        }
+
+        .checkbox-label {
+          color: #374151;
+          font-weight: 500;
+        }
+
+        .tags-input {
+          display: block;
+          width: 100%;
+          padding: 1rem 1.25rem;
+          background: rgba(255, 255, 255, 0.7);
+          border: 2px solid #e5e7eb;
+          border-radius: 0.75rem;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          font-size: 1rem;
+          backdrop-filter: blur(4px);
+          transition: all 0.2s;
+        }
+
+        .tags-input:focus {
+          outline: none;
+          ring: 2px;
+          ring-color: #6366f1;
+          border-color: transparent;
+        }
+
+        /* Submit Section */
+        .submit-section {
+          display: flex;
+          justify-content: flex-end;
+          gap: 1.5rem;
+          padding-top: 2rem;
+        }
+
+        @media (max-width: 640px) {
+          .submit-section {
+            flex-direction: column;
+          }
+        }
+
+        .btn {
+          padding: 1rem 2rem;
+          border-radius: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          border: none;
+          font-size: 1rem;
+        }
+
+        .btn-secondary {
+          border: 2px solid #d1d5db;
+          color: #374151;
+          background: white;
+        }
+
+        .btn-secondary:hover {
+          background: #f9fafb;
+        }
+
+        .btn-primary {
+          background: linear-gradient(45deg, #f97316, #f59e0b);
+          color: white;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover {
+          background: linear-gradient(45deg, #ea580c, #d97706);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-primary:focus {
+          outline: none;
+          ring: 2px;
+          ring-offset: 2px;
+          ring-color: #f97316;
+        }
+
+        .btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .btn:disabled:hover {
+          background: linear-gradient(45deg, #f97316, #f59e0b);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-icon {
+          width: 1.25rem;
+          height: 1.25rem;
+          margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+          .main-wrapper {
+            padding: 1rem;
+          }
+          
+          .header-content {
+            padding: 1.5rem;
+          }
+          
+          .section-content {
+            padding: 1.5rem;
+          }
+          
+          .grid {
+            gap: 1rem;
+          }
+          
+          .variant-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .images-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+      `}</style>
+      
+      <div className="container">
+        <div className="main-wrapper">
           {/* Premium Header */}
-          <div className="relative mb-12">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 rounded-3xl transform rotate-1 opacity-10"></div>
-            <div className="relative bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="header">
+            <div className="header-content">
+              <div className="header-inner">
+                <div className="header-icon">
+                  <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-orange-600 bg-clip-text text-transparent">
-                    Create New Product
-                  </h1>
-                  <p className="text-lg text-gray-600 mt-2">Build your next bestseller with our premium product creator</p>
+                  <h1 className="header-title">Create New Product</h1>
+                  <p className="header-subtitle">Build your next bestseller with our premium product creator</p>
                 </div>
               </div>
             </div>
@@ -234,48 +1074,37 @@ const AddProduct = () => {
             onSubmit={handleSubmit}
           >
             {({ values, setFieldValue, isSubmitting, errors, touched }) => (
-              <Form className="space-y-8">
+              <Form className="form-container">
                 {/* Basic Information Section */}
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                  <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50">
-                    <div className="flex items-center mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
-                        <span className="text-white text-lg font-bold">1</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-800">Basic Information</h2>
+                <div className="section">
+                  <div className="section-content">
+                    <div className="section-header">
+                      <div className="section-number">1</div>
+                      <h2 className="section-title">Basic Information</h2>
                     </div>
                     
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="grid lg:grid-cols-2">
                       {/* Product Name */}
-                      <div className="lg:col-span-2">
-                        <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-3">
-                          Product Name*
-                        </label>
+                      <div className="col-span-2 form-group">
+                        <label htmlFor="name" className="form-label">Product Name*</label>
                         <Field
                           id="name"
                           name="name"
                           type="text"
-                          className="block w-full px-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm"
+                          className="form-input"
                           placeholder="Enter your amazing product name..."
                         />
-                        <ErrorMessage
-                          name="name"
-                          component="div"
-                          className="text-red-500 text-sm mt-2 font-medium"
-                        />
+                        <ErrorMessage name="name" component="div" className="error-message" />
                       </div>
                       
                       {/* Category */}
-                      <div>
-                        <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-3">
-                          Category*
-                        </label>
+                      <div className="form-group">
+                        <label htmlFor="category" className="form-label">Category*</label>
                         <Field
                           as="select"
                           id="category"
                           name="category"
-                          className="block w-full px-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm"
+                          className="form-select"
                           onChange={(e) => {
                             const category = e.target.value;
                             setFieldValue('category', category);
@@ -289,23 +1118,17 @@ const AddProduct = () => {
                             </option>
                           ))}
                         </Field>
-                        <ErrorMessage
-                          name="category"
-                          component="div"
-                          className="text-red-500 text-sm mt-2 font-medium"
-                        />
+                        <ErrorMessage name="category" component="div" className="error-message" />
                       </div>
                       
                       {/* Sub Category */}
-                      <div>
-                        <label htmlFor="subCategory" className="block text-sm font-semibold text-gray-700 mb-3">
-                          Sub Category*
-                        </label>
+                      <div className="form-group">
+                        <label htmlFor="subCategory" className="form-label">Sub Category*</label>
                         <Field
                           as="select"
                           id="subCategory"
                           name="subCategory"
-                          className="block w-full px-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm disabled:opacity-50"
+                          className="form-select"
                           disabled={!values.category}
                         >
                           <option value="">Select Sub Category</option>
@@ -317,26 +1140,20 @@ const AddProduct = () => {
                             ))
                           }
                         </Field>
-                        <ErrorMessage
-                          name="subCategory"
-                          component="div"
-                          className="text-red-500 text-sm mt-2 font-medium"
-                        />
+                        <ErrorMessage name="subCategory" component="div" className="error-message" />
                         {!values.category && (
-                          <p className="text-sm text-gray-500 mt-2 italic">Please select a category first</p>
+                          <p className="help-text">Please select a category first</p>
                         )}
                       </div>
                       
                       {/* Product Category */}
-                      <div className="lg:col-span-2">
-                        <label htmlFor="productCategory" className="block text-sm font-semibold text-gray-700 mb-3">
-                          Product Category*
-                        </label>
+                      <div className="col-span-2 form-group">
+                        <label htmlFor="productCategory" className="form-label">Product Category*</label>
                         <Field
                           as="select"
                           id="productCategory"
                           name="productCategory"
-                          className="block w-full px-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm"
+                          className="form-select"
                         >
                           {productCategoryOptions.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -344,41 +1161,28 @@ const AddProduct = () => {
                             </option>
                           ))}
                         </Field>
-                        <ErrorMessage
-                          name="productCategory"
-                          component="div"
-                          className="text-red-500 text-sm mt-2 font-medium"
-                        />
+                        <ErrorMessage name="productCategory" component="div" className="error-message" />
                       </div>
                     </div>
                     
                     {/* Description */}
-                    <div className="mt-8">
-                      <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-3">
-                        Product Description*
-                      </label>
+                    <div className="form-group" style={{ marginTop: '2rem' }}>
+                      <label htmlFor="description" className="form-label">Product Description*</label>
                       <Field
                         as="textarea"
                         id="description"
                         name="description"
-                        rows={5}
-                        className="block w-full px-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm resize-none"
+                        className="form-input form-textarea"
                         placeholder="Describe your product in detail... What makes it special?"
                       />
-                      <ErrorMessage
-                        name="description"
-                        component="div"
-                        className="text-red-500 text-sm mt-2 font-medium"
-                      />
-                      <div className="flex justify-between items-center mt-2">
-                        <div className={`text-sm ${values.description.length > 800 ? 'text-orange-600' : 'text-gray-500'}`}>
+                      <ErrorMessage name="description" component="div" className="error-message" />
+                      <div className="char-counter">
+                        <div className={`char-count ${values.description.length > 800 ? 'warning' : ''}`}>
                           {values.description.length}/1000 characters
                         </div>
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                        <div className="progress-bar">
                           <div 
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                              values.description.length > 800 ? 'bg-orange-500' : 'bg-green-500'
-                            }`}
+                            className={`progress-fill ${values.description.length > 800 ? 'warning' : ''}`}
                             style={{ width: `${(values.description.length / 1000) * 100}%` }}
                           ></div>
                         </div>
@@ -388,92 +1192,69 @@ const AddProduct = () => {
                 </div>
 
                 {/* Pricing Section */}
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                  <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50">
-                    <div className="flex items-center mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
-                        <span className="text-white text-lg font-bold">2</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-800">Pricing Strategy</h2>
+                <div className="pricing-section section">
+                  <div className="section-content">
+                    <div className="section-header">
+                      <div className="section-number">2</div>
+                      <h2 className="section-title">Pricing Strategy</h2>
                     </div>
                     
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <div>
-                        <label htmlFor="zammerPrice" className="block text-sm font-semibold text-gray-700 mb-3">
-                          Zammer Price (₹)*
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span className="text-gray-500 text-lg">₹</span>
-                          </div>
+                    <div className="grid lg:grid-cols-2">
+                      <div className="form-group">
+                        <label htmlFor="zammerPrice" className="form-label">Zammer Price (₹)*</label>
+                        <div className="input-group">
+                          <div className="input-prefix">₹</div>
                           <Field
                             id="zammerPrice"
                             name="zammerPrice"
                             type="number"
                             min="0"
                             step="0.01"
-                            className="block w-full pl-10 pr-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm"
+                            className="form-input input-with-prefix"
                             placeholder="0.00"
                           />
                         </div>
-                        <ErrorMessage
-                          name="zammerPrice"
-                          component="div"
-                          className="text-red-500 text-sm mt-2 font-medium"
-                        />
-                        <p className="text-sm text-gray-600 mt-2">Your selling price on Zammer</p>
+                        <ErrorMessage name="zammerPrice" component="div" className="error-message" />
+                        <p className="help-text">Your selling price on Zammer</p>
                       </div>
                       
-                      <div>
-                        <label htmlFor="mrp" className="block text-sm font-semibold text-gray-700 mb-3">
-                          MRP (₹)*
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span className="text-gray-500 text-lg">₹</span>
-                          </div>
+                      <div className="form-group">
+                        <label htmlFor="mrp" className="form-label">MRP (₹)*</label>
+                        <div className="input-group">
+                          <div className="input-prefix">₹</div>
                           <Field
                             id="mrp"
                             name="mrp"
                             type="number"
                             min="0"
                             step="0.01"
-                            className="block w-full pl-10 pr-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm"
+                            className="form-input input-with-prefix"
                             placeholder="0.00"
                           />
                         </div>
-                        <ErrorMessage
-                          name="mrp"
-                          component="div"
-                          className="text-red-500 text-sm mt-2 font-medium"
-                        />
-                        <p className="text-sm text-gray-600 mt-2">Maximum retail price</p>
+                        <ErrorMessage name="mrp" component="div" className="error-message" />
+                        <p className="help-text">Maximum retail price</p>
                       </div>
                     </div>
                     
                     {/* Discount Calculation */}
                     {values.zammerPrice && values.mrp && Number(values.mrp) > Number(values.zammerPrice) && (
-                      <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="discount-card">
+                        <div className="discount-content">
+                          <div className="discount-left">
+                            <div className="discount-icon">
+                              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                               </svg>
                             </div>
-                            <div>
-                              <div className="text-green-700 text-lg font-bold">
-                                {Math.round(((Number(values.mrp) - Number(values.zammerPrice)) / Number(values.mrp)) * 100)}% Discount
-                              </div>
-                              <div className="text-green-600 text-sm">
-                                Customer saves ₹{(Number(values.mrp) - Number(values.zammerPrice)).toFixed(2)}
-                              </div>
+                            <div className="discount-info">
+                              <h4>{Math.round(((Number(values.mrp) - Number(values.zammerPrice)) / Number(values.mrp)) * 100)}% Discount</h4>
+                              <p>Customer saves ₹{(Number(values.mrp) - Number(values.zammerPrice)).toFixed(2)}</p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-green-700">₹{values.zammerPrice}</div>
-                            <div className="text-sm text-gray-500 line-through">₹{values.mrp}</div>
+                          <div className="discount-right">
+                            <div className="discount-price">₹{values.zammerPrice}</div>
+                            <div className="discount-original">₹{values.mrp}</div>
                           </div>
                         </div>
                       </div>
@@ -482,33 +1263,28 @@ const AddProduct = () => {
                 </div>
 
                 {/* Variants Section */}
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                  <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50">
-                    <div className="flex items-center mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
-                        <span className="text-white text-lg font-bold">3</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-800">Product Variants</h2>
+                <div className="variants-section section">
+                  <div className="section-content">
+                    <div className="section-header">
+                      <div className="section-number">3</div>
+                      <h2 className="section-title">Product Variants</h2>
                     </div>
                     
                     <FieldArray name="variants">
                       {({ remove, push }) => (
-                        <div className="space-y-6">
+                        <div className="variants-container">
                           {values.variants.map((variant, index) => (
-                            <div key={index} className="relative p-6 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl shadow-sm">
-                              <div className="absolute -top-3 left-6 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                                Variant {index + 1}
-                              </div>
+                            <div key={index} className="variant-item">
+                              <div className="variant-label">Variant {index + 1}</div>
                               
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+                              <div className="variant-grid">
                                 {/* Color Selection */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-gray-700 mb-3">Color*</label>
+                                <div className="form-group">
+                                  <label className="form-label">Color*</label>
                                   <Field
                                     as="select"
                                     name={`variants.${index}.color`}
-                                    className="block w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                                    className="form-select"
                                     onChange={(e) => {
                                       const selectedColor = colorOptions.find(color => color.name === e.target.value);
                                       setFieldValue(`variants.${index}.color`, e.target.value);
@@ -524,42 +1300,34 @@ const AddProduct = () => {
                                       </option>
                                     ))}
                                   </Field>
-                                  <ErrorMessage
-                                    name={`variants.${index}.color`}
-                                    component="div"
-                                    className="text-red-500 text-xs mt-1 font-medium"
-                                  />
+                                  <ErrorMessage name={`variants.${index}.color`} component="div" className="error-message" />
                                 </div>
 
                                 {/* Color Preview */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-gray-700 mb-3">Preview</label>
-                                  <div className="flex items-center space-x-3">
+                                <div className="form-group">
+                                  <label className="form-label">Preview</label>
+                                  <div className="color-preview">
                                     <div 
-                                      className="w-12 h-12 border-2 border-gray-300 rounded-xl shadow-sm"
+                                      className="color-swatch"
                                       style={{ backgroundColor: variant.colorCode || '#f0f0f0' }}
                                     ></div>
                                     <Field
                                       name={`variants.${index}.colorCode`}
                                       type="text"
                                       placeholder="#000000"
-                                      className="flex-1 px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      className="color-input"
                                     />
                                   </div>
-                                  <ErrorMessage
-                                    name={`variants.${index}.colorCode`}
-                                    component="div"
-                                    className="text-red-500 text-xs mt-1 font-medium"
-                                  />
+                                  <ErrorMessage name={`variants.${index}.colorCode`} component="div" className="error-message" />
                                 </div>
                                 
                                 {/* Size Selection */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-gray-700 mb-3">Size*</label>
+                                <div className="form-group">
+                                  <label className="form-label">Size*</label>
                                   <Field
                                     as="select"
                                     name={`variants.${index}.size`}
-                                    className="block w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                                    className="form-select"
                                   >
                                     <option value="">Select Size</option>
                                     {sizeOptions.map((size) => (
@@ -568,27 +1336,19 @@ const AddProduct = () => {
                                       </option>
                                     ))}
                                   </Field>
-                                  <ErrorMessage
-                                    name={`variants.${index}.size`}
-                                    component="div"
-                                    className="text-red-500 text-xs mt-1 font-medium"
-                                  />
+                                  <ErrorMessage name={`variants.${index}.size`} component="div" className="error-message" />
                                 </div>
                                 
                                 {/* Quantity */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity*</label>
+                                <div className="form-group">
+                                  <label className="form-label">Quantity*</label>
                                   <Field
                                     name={`variants.${index}.quantity`}
                                     type="number"
                                     min="0"
-                                    className="block w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                                    className="form-input"
                                   />
-                                  <ErrorMessage
-                                    name={`variants.${index}.quantity`}
-                                    component="div"
-                                    className="text-red-500 text-xs mt-1 font-medium"
-                                  />
+                                  <ErrorMessage name={`variants.${index}.quantity`} component="div" className="error-message" />
                                 </div>
                               </div>
                               
@@ -597,9 +1357,9 @@ const AddProduct = () => {
                                 <button
                                   type="button"
                                   onClick={() => remove(index)}
-                                  className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors shadow-lg"
+                                  className="remove-btn"
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                   </svg>
                                 </button>
@@ -610,9 +1370,9 @@ const AddProduct = () => {
                           <button
                             type="button"
                             onClick={() => push({ color: '', colorCode: '', size: '', quantity: 1 })}
-                            className="w-full p-4 border-2 border-dashed border-purple-300 rounded-2xl text-purple-600 hover:text-purple-700 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 font-semibold"
+                            className="add-variant-btn"
                           >
-                            <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ margin: '0 auto 0.5rem auto' }}>
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                             Add Another Variant
@@ -624,30 +1384,24 @@ const AddProduct = () => {
                 </div>
 
                 {/* Images Section */}
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                  <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50">
-                    <div className="flex items-center mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
-                        <span className="text-white text-lg font-bold">4</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-800">Product Gallery</h2>
+                <div className="images-section section">
+                  <div className="section-content">
+                    <div className="section-header">
+                      <div className="section-number">4</div>
+                      <h2 className="section-title">Product Gallery</h2>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-4">
-                        Upload Product Images*
-                      </label>
+                      <label className="form-label">Upload Product Images*</label>
                       
                       {values.images.length > 0 && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                        <div className="images-grid">
                           {values.images.map((image, index) => (
-                            <div key={index} className="relative group">
-                              <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden shadow-lg">
+                            <div key={index} className="image-item">
+                              <div className="image-container">
                                 <img 
                                   src={image} 
                                   alt={`Product ${index + 1}`}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               </div>
                               <button
@@ -657,35 +1411,33 @@ const AddProduct = () => {
                                   newImages.splice(index, 1);
                                   setFieldValue('images', newImages);
                                 }}
-                                className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors shadow-lg opacity-0 group-hover:opacity-100"
+                                className="image-remove-btn"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                               </button>
                               {index === 0 && (
-                                <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                                  Main
-                                </div>
+                                <div className="main-badge">Main</div>
                               )}
                             </div>
                           ))}
                         </div>
                       )}
                       
-                      <div className="border-2 border-dashed border-blue-300 rounded-2xl p-8 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200">
-                        <label className="block cursor-pointer">
-                          <div className="text-center">
-                            <svg className="mx-auto h-16 w-16 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="upload-area">
+                        <label style={{ display: 'block', cursor: 'pointer' }}>
+                          <div className="upload-content">
+                            <svg className="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
-                            <div className="text-lg font-semibold text-gray-700 mb-2">
+                            <div className="upload-title">
                               {uploadingImages ? 'Uploading...' : 'Upload Product Images'}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="upload-subtitle">
                               {uploadingImages ? (
-                                <div className="flex items-center justify-center">
-                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-2"></div>
+                                <div className="upload-loading">
+                                  <div className="spinner"></div>
                                   Processing your images...
                                 </div>
                               ) : (
@@ -704,12 +1456,8 @@ const AddProduct = () => {
                         </label>
                       </div>
                       
-                      <ErrorMessage
-                        name="images"
-                        component="div"
-                        className="text-red-500 text-sm mt-3 font-medium"
-                      />
-                      <p className="text-sm text-gray-500 mt-3">
+                      <ErrorMessage name="images" component="div" className="error-message" />
+                      <p className="help-text">
                         💡 <strong>Tip:</strong> Upload high-quality images for better customer engagement. First image will be the main product image.
                       </p>
                     </div>
@@ -717,98 +1465,89 @@ const AddProduct = () => {
                 </div>
 
                 {/* Additional Information */}
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                  <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50">
-                    <div className="flex items-center mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
-                        <span className="text-white text-lg font-bold">5</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-800">Product Features</h2>
+                <div className="features-section section">
+                  <div className="section-content">
+                    <div className="section-header">
+                      <div className="section-number">5</div>
+                      <h2 className="section-title">Product Features</h2>
                     </div>
                     
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
-                          <Field
-                            id="isLimitedEdition"
-                            name="isLimitedEdition"
-                            type="checkbox"
-                            className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-4"
-                          />
-                          <label htmlFor="isLimitedEdition" className="text-gray-700 font-medium">
-                            <span className="text-purple-600">⭐</span> Limited Edition Product
-                          </label>
-                        </div>
-                        
-                        <div className="flex items-center p-4 bg-gradient-to-r from-pink-50 to-red-50 rounded-xl border border-pink-200">
-                          <Field
-                            id="isTrending"
-                            name="isTrending"
-                            type="checkbox"
-                            className="h-5 w-5 text-pink-600 focus:ring-pink-500 border-gray-300 rounded mr-4"
-                          />
-                          <label htmlFor="isTrending" className="text-gray-700 font-medium">
-                            <span className="text-pink-600">🔥</span> Mark as Trending
-                          </label>
-                        </div>
+                    <div className="features-grid">
+                      <div className="checkbox-card purple">
+                        <Field
+                          id="isLimitedEdition"
+                          name="isLimitedEdition"
+                          type="checkbox"
+                          className="checkbox-input"
+                        />
+                        <label htmlFor="isLimitedEdition" className="checkbox-label">
+                          <span style={{ color: '#8b5cf6' }}>⭐</span> Limited Edition Product
+                        </label>
                       </div>
                       
-                      <div>
-                        <label htmlFor="tags" className="block text-sm font-semibold text-gray-700 mb-3">
-                          Product Tags
-                        </label>
-                        <input
-                          id="tags"
-                          type="text"
-                          className="block w-full px-5 py-4 bg-white/70 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base backdrop-blur-sm"
-                          placeholder="summer, casual, cotton, comfortable, trendy..."
-                          value={values.tags.join(', ')}
-                          onChange={(e) => {
-                            const tagsString = e.target.value;
-                            const tagsArray = tagsString
-                              .split(',')
-                              .map(tag => tag.trim())
-                              .filter(tag => tag);
-                            setFieldValue('tags', tagsArray);
-                          }}
+                      <div className="checkbox-card pink">
+                        <Field
+                          id="isTrending"
+                          name="isTrending"
+                          type="checkbox"
+                          className="checkbox-input"
                         />
-                        <p className="text-sm text-gray-500 mt-2">
-                          Separate tags with commas. Tags help customers discover your product easily.
-                        </p>
+                        <label htmlFor="isTrending" className="checkbox-label">
+                          <span style={{ color: '#ec4899' }}>🔥</span> Mark as Trending
+                        </label>
                       </div>
+                    </div>
+                    
+                    <div className="form-group" style={{ marginTop: '1.5rem' }}>
+                      <label htmlFor="tags" className="form-label">Product Tags</label>
+                      <input
+                        id="tags"
+                        type="text"
+                        className="tags-input"
+                        placeholder="summer, casual, cotton, comfortable, trendy..."
+                        value={values.tags.join(', ')}
+                        onChange={(e) => {
+                          const tagsString = e.target.value;
+                          const tagsArray = tagsString
+                            .split(',')
+                            .map(tag => tag.trim())
+                            .filter(tag => tag);
+                          setFieldValue('tags', tagsArray);
+                        }}
+                      />
+                      <p className="help-text">
+                        Separate tags with commas. Tags help customers discover your product easily.
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Submit Section */}
-                <div className="flex justify-end space-x-6 pt-8">
+                <div className="submit-section">
                   <button
                     type="button"
                     onClick={() => navigate('/seller/dashboard')}
-                    className="px-8 py-4 border-2 border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 font-semibold"
+                    className="btn btn-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || isLoading || uploadingImages}
-                    className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 font-semibold ${
-                      (isSubmitting || isLoading || uploadingImages) ? 'opacity-70 cursor-not-allowed' : 'hover:from-orange-600 hover:to-amber-600'
-                    }`}
+                    className="btn btn-primary"
                   >
                     {isLoading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      <>
+                        <div className="spinner"></div>
                         Creating Product...
-                      </div>
+                      </>
                     ) : (
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <>
+                        <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Create Product
-                      </div>
+                      </>
                     )}
                   </button>
                 </div>

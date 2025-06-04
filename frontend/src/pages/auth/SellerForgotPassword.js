@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
-import './SellerForgotPassword.css'; // ✅ new CSS
+import './SellerForgotPassword.css';
 
 const SellerForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -61,10 +61,10 @@ const SellerForgotPassword = () => {
           <img src="https://zammernow.com/assets/logo.svg" alt="Zammer Logo" className="logo" />
         </div>
         {resetComplete ? (
-          <div className="text-center">
+          <div style={{ textAlign: 'center' }}>
             <h2 className="auth-title">Password Reset Complete</h2>
             <p className="auth-subtitle">Your password has been reset successfully.</p>
-            <Link to="/seller/login" className="btn-primary mt-4">Sign In</Link>
+            <Link to="/seller/login" className="btn-primary" style={{ marginTop: '16px', display: 'inline-block' }}>Sign In</Link>
           </div>
         ) : (
           <>
@@ -108,7 +108,7 @@ const SellerForgotPassword = () => {
                 </>
               )}
             </div>
-            <p className="text-center mt-4 text-sm text-gray-600">
+            <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px', color: '#6b7280' }}>
               Remembered your password? <Link to="/seller/login" className="register-link">Sign in</Link>
             </p>
           </>
